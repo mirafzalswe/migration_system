@@ -12,7 +12,6 @@ def client():
     app.config['TESTING'] = True
     app.config['DATA_DIR'] = temp_dir
 
-    # Re-initialize managers with the temp_dir
     from migration_system.persistence import WorkloadManager, MigrationManager
     from migration_system import api
     api.workload_manager = WorkloadManager(temp_dir)
@@ -106,12 +105,12 @@ class TestWorkloadAPI:
         assert data['ip'] == sample_workload_data['ip']
     
     def test_create_duplicate_workload(self, client, sample_workload_data):
-        # Create first workload
+
         client.post('/workloads', 
                    data=json.dumps(sample_workload_data),
                    content_type='application/json')
         
-        # Try to create duplicate
+
         response = client.post('/workloads', 
                               data=json.dumps(sample_workload_data),
                               content_type='application/json')
@@ -119,12 +118,12 @@ class TestWorkloadAPI:
         assert response.status_code == 409
     
     def test_get_workload(self, client, sample_workload_data):
-        # Create workload
+
         client.post('/workloads', 
                    data=json.dumps(sample_workload_data),
                    content_type='application/json')
         
-        # Get workload
+
         response = client.get(f'/workloads/{sample_workload_data["ip"]}')
         
         assert response.status_code == 200
@@ -136,12 +135,9 @@ class TestWorkloadAPI:
         assert response.status_code == 404
     
     def test_update_workload(self, client, sample_workload_data):
-        # Create workload
         client.post('/workloads', 
                    data=json.dumps(sample_workload_data),
                    content_type='application/json')
-        
-        # Update workload
         update_data = sample_workload_data.copy()
         update_data['credentials']['username'] = 'updateduser'
         
@@ -154,12 +150,12 @@ class TestWorkloadAPI:
         assert data['credentials']['username'] == 'updateduser'
     
     def test_update_workload_ip_forbidden(self, client, sample_workload_data):
-        # Create workload
+  
         client.post('/workloads', 
                    data=json.dumps(sample_workload_data),
                    content_type='application/json')
         
-        # Try to update IP
+     
         update_data = sample_workload_data.copy()
         update_data['ip'] = '192.168.1.2'
         
@@ -170,21 +166,21 @@ class TestWorkloadAPI:
         assert response.status_code == 400
     
     def test_delete_workload(self, client, sample_workload_data):
-        # Create workload
+
         client.post('/workloads', 
                    data=json.dumps(sample_workload_data),
                    content_type='application/json')
         
-        # Delete workload
+       
         response = client.delete(f'/workloads/{sample_workload_data["ip"]}')
         assert response.status_code == 204
         
-        # Verify deletion
+    
         response = client.get(f'/workloads/{sample_workload_data["ip"]}')
         assert response.status_code == 404
     
     def test_list_workloads(self, client, sample_workload_data):
-        # Create multiple workloads
+
         workload2 = sample_workload_data.copy()
         workload2['ip'] = '192.168.1.2'
         
@@ -195,7 +191,7 @@ class TestWorkloadAPI:
                    data=json.dumps(workload2),
                    content_type='application/json')
         
-        # List workloads
+
         response = client.get('/workloads')
         assert response.status_code == 200
         
@@ -214,7 +210,7 @@ class TestMigrationAPI:
         assert data['migration_state'] == 'not_started'
     
     def test_create_migration_without_c_drive(self, client, sample_migration_data):
-        # Remove C: from selected mount points
+
         sample_migration_data['selected_mount_points'] = [
             {
                 "mount_point_name": "D:\\",
@@ -229,7 +225,7 @@ class TestMigrationAPI:
         assert response.status_code == 400
     
     def test_start_migration(self, client, sample_migration_data):
-        # Create migration
+
         response = client.post('/migrations',
                               data=json.dumps(sample_migration_data),
                               content_type='application/json')
@@ -237,8 +233,8 @@ class TestMigrationAPI:
         migration_data = json.loads(response.data)
         migration_id = migration_data['id']
         
-        # Start migration
-        start_data = {"sleep_minutes": 0.001}  # Very short for testing
+      
+        start_data = {"sleep_minutes": 0.001}  
         response = client.post(f'/migrations/{migration_id}/start',
                               data=json.dumps(start_data),
                               content_type='application/json')
@@ -248,15 +244,13 @@ class TestMigrationAPI:
         assert data['migration_state'] == 'success'
     
     def test_get_migration_status(self, client, sample_migration_data):
-        # Create migration
+
         response = client.post('/migrations',
                               data=json.dumps(sample_migration_data),
                               content_type='application/json')
         
         migration_data = json.loads(response.data)
         migration_id = migration_data['id']
-        
-        # Get status
         response = client.get(f'/migrations/{migration_id}/status')
         assert response.status_code == 200
         
