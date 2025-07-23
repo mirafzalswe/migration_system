@@ -20,7 +20,7 @@ A comprehensive system for managing workload migrations. This project provides a
 
 1.  **Clone the repository:**
     ```bash
-    git clone <repository-url>
+    git clone https://github.com/mirafzalswe/migration_system
     cd migration-task
     ```
 
