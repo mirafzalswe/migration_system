@@ -27,7 +27,7 @@ class TestWorkloadManager:
         created = self.manager.create_workload(workload)
         assert created.ip == workload.ip
 
-        # Verify file was created
+
         file_path = Path(self.temp_dir) / "workload_192.168.1.1.json"
         assert file_path.exists()
 
@@ -61,12 +61,12 @@ class TestWorkloadManager:
         self.manager.create_workload(workload1)
 
         creds2 = Credentials("user2", "pass2", "domain2.com")
-        workload2 = Workload(_ip="192.168.1.1", credentials=creds2)  # Same IP, different creds
+        workload2 = Workload(_ip="192.168.1.1", credentials=creds2)  
 
         updated = self.manager.update_workload(workload2)
         assert updated.credentials.username == "user2"
 
-        # Verify that the stored workload is updated
+
         retrieved = self.manager.read_workload("192.168.1.1")
         assert retrieved.credentials.username == "user2"
 
@@ -86,7 +86,7 @@ class TestMigrationManager:
         self.temp_dir = tempfile.mkdtemp()
         self.manager = MigrationManager(self.temp_dir)
 
-        # Dependencies for a valid migration
+        
         self.creds = Credentials("user", "pass", "domain.com")
         self.cloud_creds = Credentials("cloud_user", "cloud_pass", "cloud.com")
 
@@ -109,16 +109,15 @@ class TestMigrationManager:
         assert (Path(self.temp_dir) / f"migration_{migration.id}.json").exists()
 
     def test_migration_crud_operations(self):
-        # Create
+
         migration = Migration([self.c_drive], self.source, self.target)
         created = self.manager.create_migration(migration)
         migration_id = created.id
 
-        # Read
+
         retrieved = self.manager.read_migration(migration_id)
         assert retrieved.id == migration_id
 
-        # Update (e.g., change target)
         new_target_vm = Workload(_ip="192.168.1.200", credentials=self.creds)
         new_target = MigrationTarget(CloudType.AZURE, self.cloud_creds, new_target_vm)
         retrieved.migration_target = new_target
@@ -127,7 +126,7 @@ class TestMigrationManager:
         assert updated.migration_target.target_vm.ip == "192.168.1.200"
         assert updated.migration_target.cloud_type == CloudType.AZURE
 
-        # Delete
+
         self.manager.delete_migration(migration_id)
         with pytest.raises(ObjectNotFoundError):
             self.manager.read_migration(migration_id)
